@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Share Dashboard</title>
+
+  <!-- Firebase App and Firebase Auth -->
+  <script type="module">
+    import { getStorage, ref, uploadBytes, listAll, deleteObject } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
+    // Import Firebase modules
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+  import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+   
+
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0rAjoy0iCJAy8n9iRQO4n105IH0-O0xY",
+      authDomain: "sec-sha-1.firebaseapp.com",
+      projectId: "sec-sha-1",
+      storageBucket: "sec-sha-1.firebasestorage.app",
+      messagingSenderId: "75383491829",
+      appId: "1:75383491829:web:2f32f1698fd06f8ff4c9bc",
+      measurementId: "G-SF5VTH987S"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const firebaseStorage = getStorage(app); 
+    console.log('firebaseStorage:', firebaseStorage); // Check if it is correctly initialized
+
+    // window.firebaseStorage = getStorage(app); // Make storage globally accessible
+
+    // Sign out logic
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = 'index.html'; // Redirect to the login page
+      }).catch((error) => {
+        console.error('Error signing out: ', error);
+      });
+    }
+  </script>
+
+  <style>
+    /* Basic styling for dashboard page */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #333;
+      padding: 10px;
+      color: white;
+      display: flex;
+      justify-content: space-around;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    nav a:hover {
+      background-color: #575757;
+    }
+    .container {
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    #uploaded-docs, #share-docs, #profile {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="#" id="upload-doc-btn">Upload Doc</a>
+      <a href="#" id="delete-doc-btn">Delete Doc</a>
+      <a href="#" id="share-doc-btn">Share Doc</a>
+      <a href="#" id="profile-btn">My Profile</a>
+      <a href="#" id="logout-btn">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Welcome to Secure Share</h2>
+
+    <!-- Upload Doc Section -->
+    <div id="upload-doc-section" class="hidden">
+      <h3>Upload Document</h3>
+      <input type="file" id="file-upload" onchange="uploadFile()">
+    </div>
+
+    <!-- Delete Doc Section -->
+    <div id="delete-doc-section" class="hidden">
+      <h3>Delete Document</h3>
+      <ul id="uploaded-docs"></ul>
+    </div>
+
+    <!-- Share Doc Section -->
+    <div id="share-doc-section" class="hidden">
+      <h3>Share Document</h3>
+      <ul id="share-docs"></ul>
+    </div>
+
+    <!-- My Profile Section -->
+    <div id="profile-section" class="hidden">
+      <h3>My Profile</h3>
+      <p><strong>Email:</strong> <span id="profile-email"></span></p>
+      <p><strong>Phone:</strong> <span id="profile-phone"></span></p>
+    </div>
+  </div>
+
+ 
+  <!-- Global script for upload function -->
+  <script>
+    function uploadFile() { 
+    const file = document.getElementById('file-upload').files[0];
+    if (!file) {
+      alert('Please select a file to upload.');
+      return;
+    }
+
+    // Use the `ref` function to create a reference to the storage path
+    const storageRef = ref(firebaseStorage, 'documents/' + file.name);
+
+    uploadBytes(storageRef, file).then((snapshot) => {
+      alert('Document uploaded successfully!');
+    }).catch((error) => {
+      console.error('Error uploading document:', error);
+    });
+  }
+  </script>
+
+  <script type="module">
+    // Functionality to switch between sections based on navigation
+    document.getElementById('upload-doc-btn').addEventListener('click', function() {
+      showSection('upload-doc-section');
+    });
+
+    document.getElementById('delete-doc-btn').addEventListener('click', function() {
+      showSection('delete-doc-section');
+      loadUploadedDocs();
+    });
+
+    document.getElementById('share-doc-btn').addEventListener('click', function() {
+      showSection('share-doc-section');
+      loadUploadedDocsForSharing();
+    });
+
+    document.getElementById('profile-btn').addEventListener('click', function() {
+      showSection('profile-section');
+      showProfile();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      logout();
+    });
+
+    // Function to show the respective section
+    function showSection(sectionId) {
+      const sections = document.querySelectorAll('.container > div');
+      sections.forEach(section => section.classList.add('hidden'));
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    // Function to load and list uploaded documents
+    function loadUploadedDocs() {
+      const docsRef = firebaseStorage.ref(firebaseStorage, 'documents/');
+      firebaseStorage.listAll(docsRef).then((res) => {
+        const docsList = document.getElementById('uploaded-docs');
+        docsList.innerHTML = '';
+        res.items.forEach((itemRef) => {
+          const li = document.createElement('li');
+          li.textContent = itemRef.name;
+          li.addEventListener('click', () => deleteFile(itemRef));
+          docsList.appendChild(li);
+        });
+      }).catch((error) => {
+        console.error('Error loading documents:', error);
+      });
+    }
+
+    // Function to delete selected document
+    function deleteFile(itemRef) {
+      firebaseStorage.deleteObject(itemRef).then(() => {
+        alert('Document deleted successfully!');
+        loadUploadedDocs();
+      }).catch((error) => {
+        console.error('Error deleting document:', error);
+      });
+    }
+
+    // Function to load and list documents for sharing
+    function loadUploadedDocsForSharing() {
+      const docsRef = firebaseStorage.ref(firebaseStorage, 'documents/');
+      firebaseStorage.listAll(docsRef).then((res) => {
+        const docsList = document.getElementById('share-docs');
+        docsList.innerHTML = '';
+        res.items.forEach((itemRef) => {
+          const li = document.createElement('li');
+          li.textContent = itemRef.name;
+          const shareBtn = document.createElement('button');
+          shareBtn.textContent = 'Share';
+          shareBtn.addEventListener('click', () => shareDoc(itemRef));
+          li.appendChild(shareBtn);
+          docsList.appendChild(li);
+        });
+      }).catch((error) => {
+        console.error('Error loading documents:', error);
+      });
+    }
+
+    // Function to share document (placeholder)
+    function shareDoc(itemRef) {
+      alert('Sharing ' + itemRef.name + ' document!');
+    }
+
+    // Function to show profile info
+    function showProfile() {
+      const user = auth.currentUser;
+      if (user) {
+        document.getElementById('profile-email').textContent = user.email;
+        document.getElementById('profile-phone').textContent = user.phoneNumber || 'Not provided';
+      }
+    }
+  </script>
+
+</body>
+</html>

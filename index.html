@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Share - Phone OTP Verification</title>
+
+  <!-- Firebase App and Firebase Auth -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyB0rAjoy0iCJAy8n9iRQO4n105IH0-O0xY",
+            authDomain: "sec-sha-1.firebaseapp.com",
+            projectId: "sec-sha-1",
+            storageBucket: "sec-sha-1.firebasestorage.app",
+            messagingSenderId: "75383491829",
+            appId: "1:75383491829:web:2f32f1698fd06f8ff4c9bc",
+            measurementId: "G-SF5VTH987S"
+    };
+
+    // Initialize Firebase App
+    const app = initializeApp(firebaseConfig);
+
+    // Initialize Firebase Auth
+    const auth = getAuth(app);
+
+    // Configure reCAPTCHA verifier for phone number verification
+    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+      'size': 'normal',
+      'callback': function(response) {
+        console.log("Recaptcha resolved");
+      },
+      'expired-callback': function() {
+        console.log("Recaptcha expired");
+      }
+    }, auth);
+
+    // Render reCAPTCHA widget
+    window.recaptchaVerifier.render().then(function(widgetId) {
+      window.recaptchaWidgetId = widgetId;
+    });
+  </script>
+
+  <!-- Link to external JavaScript file (app.js) -->
+  <script type="module" src="app.js" defer></script>
+</head>
+<body>
+  <h1>Secure Share</h1>
+
+  <!-- Registration Section -->
+  <div id="register-section">
+    <input type="email" id="email" placeholder="Enter Email" required>
+    <input type="password" id="password" placeholder="Enter Password" required>
+    <input type="text" id="phone-number" placeholder="Enter Phone Number (e.g. +919876543210)" required>
+    
+    <!-- reCAPTCHA Container -->
+    <div id="recaptcha-container"></div>
+    
+    <button id="register-btn">Register</button>
+  </div>
+
+  <!-- OTP Verification Section -->
+  <div id="otp-section" style="display:none;">
+    <h2>Enter OTP</h2>
+    <input type="text" id="otp" placeholder="Enter OTP" required>
+    <button id="verify-otp-btn">Verify OTP</button>
+  </div>
+
+  <!-- Login Section -->
+  <div id="login-section" style="display:none;">
+    <h2>Login</h2>
+    <input type="email" id="login-email" placeholder="Enter Email" required>
+    <input type="password" id="login-password" placeholder="Enter Password" required>
+    <button id="login-btn">Login</button>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboard-section" style="display:none;">
+    <h2>Welcome to Secure Share Dashboard</h2>
+    <button id="logout-btn">Logout</button>
+  </div>
+
+</body>
+</html>
+
+
+
+
+
+
+<!--  apiKey: "AIzaSyB0rAjoy0iCJAy8n9iRQO4n105IH0-O0xY",
+            authDomain: "sec-sha-1.firebaseapp.com",
+            projectId: "sec-sha-1",
+            storageBucket: "sec-sha-1.firebasestorage.app",
+            messagingSenderId: "75383491829",
+            appId: "1:75383491829:web:2f32f1698fd06f8ff4c9bc",
+            measurementId: "G-SF5VTH987S"
+ -->
