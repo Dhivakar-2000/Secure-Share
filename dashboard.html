@@ -7,10 +7,11 @@
 
   <!-- Firebase App and Firebase Auth -->
   <script type="module">
-    import { getStorage, ref, uploadBytes, listAll, deleteObject } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
-    // Import Firebase modules
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-  import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+   
+   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+  import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+  import { getStorage, ref, uploadBytes } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js';
+
    
 
 
@@ -28,10 +29,9 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const firebaseStorage = getStorage(app); 
-    console.log('firebaseStorage:', firebaseStorage); // Check if it is correctly initialized
-
-    // window.firebaseStorage = getStorage(app); // Make storage globally accessible
+    const firebaseStorage = getStorage(app);  
+    console.log('Firebase Storage initialized:', firebaseStorage);
+    window.firebaseStorage = getStorage(app); // Make storage globally accessible
 
     // Sign out logic
     function logout() {
@@ -120,24 +120,32 @@
 
  
   <!-- Global script for upload function -->
-  <script>
-    function uploadFile() { 
-    const file = document.getElementById('file-upload').files[0];
-    if (!file) {
-      alert('Please select a file to upload.');
-      return;
-    }
+  <script >
+    function uploadFile() {
+  const file = document.getElementById('file-upload').files[0];
+  if (!file) {
+    alert('Please select a file to upload.');
+    return;
+  }
 
-    // Use the `ref` function to create a reference to the storage path
+  console.log('firebaseStorage:', firebaseStorage);
+  console.log('ref function type:', typeof ref); // Debugging check for `ref`
+
+  try {
     const storageRef = ref(firebaseStorage, 'documents/' + file.name);
+    console.log('Storage ref created:', storageRef);
 
     uploadBytes(storageRef, file).then((snapshot) => {
       alert('Document uploaded successfully!');
     }).catch((error) => {
       console.error('Error uploading document:', error);
     });
+  } catch (error) {
+    console.error('Caught error:', error);
   }
-  </script>
+}
+
+  </script> 
 
   <script type="module">
     // Functionality to switch between sections based on navigation
